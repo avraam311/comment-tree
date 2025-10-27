@@ -27,6 +27,11 @@ func (h *Handler) GetAllComments(c *ginext.Context) {
 		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("invalid parent_id integer"))
 		return
 	}
+	if parentID < 1 {
+		zlog.Logger.Error().Str("parent_id", parentIDStr).Msg("parent_id less than 1")
+		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("parent_id must be greater than 1: %s", parentIDStr))
+		return
+	}
 
 	comments, err := h.service.GetAllComments(c.Request.Context(), parentID)
 	if err != nil {
