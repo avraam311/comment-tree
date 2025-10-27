@@ -1,12 +1,13 @@
 package comments
 
 import (
-	// "errors"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/avraam311/comment-tree/internal/api/handlers"
+	"github.com/avraam311/comment-tree/internal/repository/comments"
 
 	"github.com/wb-go/wbf/ginext"
 	"github.com/wb-go/wbf/zlog"
@@ -27,20 +28,21 @@ func (h *Handler) GetAllComments(c *ginext.Context) {
 		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("invalid parent_id integer"))
 		return
 	}
-	if parentID < 1 {
-		zlog.Logger.Error().Str("parent_id", parentIDStr).Msg("parent_id less than 1")
-		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("parent_id must be greater than 1: %s", parentIDStr))
-		return
-	}
 
-	comments, err := h.service.GetAllComments(c.Request.Context(), parentID)
+	coms, err := h.service.GetAllComments(c.Request.Context(), parentID)
 	if err != nil {
+		if errors.Is(err, comments.ErrCommentNotFound) {
+			zlog.Logger.Warn().Err(err).Msg("comment not found")
+			handlers.Fail(c.Writer, http.StatusNotFound, fmt.Errorf("comment not found"))
+			return
+		}
+
 		zlog.Logger.Error().Err(err).Msg("failed to get comments")
 		handlers.Fail(c.Writer, http.StatusInternalServerError, fmt.Errorf("internal server error"))
 		return
 	}
 
-	handlers.OK(c.Writer, comments)
+	handlers.OK(c.Writer, coms)
 }
 
 func (h *Handler) DeleteAllComments(c *ginext.Context) {
@@ -59,12 +61,6 @@ func (h *Handler) DeleteAllComments(c *ginext.Context) {
 	}
 
 	if err := h.service.DeleteAllComments(c.Request.Context(), id); err != nil {
-		// if errors.Is(err, comments.ErrCommentNotFound) {
-		// 	zlog.Logger.Warn().Err(err).Msg("comment not found")
-		// 	handlers.Fail(c.Writer, http.StatusNotFound, fmt.Errorf("comment not found"))
-		// 	return
-		// }
-
 		zlog.Logger.Warn().Err(err).Msg("failed to delete comments")
 		handlers.Fail(c.Writer, http.StatusInternalServerError, fmt.Errorf("internal server error"))
 		return
