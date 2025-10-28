@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (s *Service) DeleteAllComments(ctx context.Context, id int) error {
+func (s *Service) DeleteAllComments(ctx context.Context, id uint) error {
 	err := s.repo.DeleteAllComments(ctx, id)
 	if err != nil {
 		return fmt.Errorf("service/get_analytics - %w", err)

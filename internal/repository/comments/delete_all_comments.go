@@ -5,11 +5,11 @@ import (
 	"fmt"
 )
 
-func (r *Repository) DeleteAllComments(ctx context.Context, id int) error {
+func (r *Repository) DeleteAllComments(ctx context.Context, id uint) error {
 	query := `
 		DELETE
 		FROM comment
-		WHERE id = $1 OR parent_id = $1;
+		WHERE id = $1;
     `
 
 	res, err := r.db.ExecContext(ctx, query, id)

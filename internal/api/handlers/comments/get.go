@@ -16,20 +16,21 @@ import (
 func (h *Handler) GetAllComments(c *ginext.Context) {
 	parentIDStr := c.Query("parent")
 
+	var parentIDpointer *uint
 	if parentIDStr == "" {
-		zlog.Logger.Error().Msg("no parameter parent recieved")
-		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("parameter parent is required"))
-		return
+		parentIDpointer = nil
+	} else {
+		parentID64, err := strconv.ParseUint(parentIDStr, 10, 64)
+		if err != nil {
+			zlog.Logger.Warn().Err(err).Msg("parent_id is not proper unsigned integer")
+			handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("invalid parent_id unsigned integer"))
+			return
+		}
+		parentID := uint(parentID64)
+		parentIDpointer = &parentID
 	}
 
-	parentID, err := strconv.Atoi(parentIDStr)
-	if err != nil {
-		zlog.Logger.Warn().Err(err).Msg("parent_id is not proper integer")
-		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("invalid parent_id integer"))
-		return
-	}
-
-	coms, err := h.service.GetAllComments(c.Request.Context(), parentID)
+	coms, err := h.service.GetAllComments(c.Request.Context(), parentIDpointer)
 	if err != nil {
 		if errors.Is(err, comments.ErrCommentNotFound) {
 			zlog.Logger.Warn().Err(err).Msg("comment not found")
@@ -47,18 +48,13 @@ func (h *Handler) GetAllComments(c *ginext.Context) {
 
 func (h *Handler) DeleteAllComments(c *ginext.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id64, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		zlog.Logger.Warn().Err(err).Msg("id is not proper integer")
-		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("invalid id integer"))
+		zlog.Logger.Warn().Err(err).Msg("id is not proper unsigned integer")
+		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("invalid id unsigned integer"))
 		return
 	}
-
-	if id < 0 {
-		zlog.Logger.Warn().Err(err).Msg("negative id")
-		handlers.Fail(c.Writer, http.StatusBadRequest, fmt.Errorf("id must be >= 0"))
-		return
-	}
+	id := uint(id64)
 
 	if err := h.service.DeleteAllComments(c.Request.Context(), id); err != nil {
 		zlog.Logger.Warn().Err(err).Msg("failed to delete comments")

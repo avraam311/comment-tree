@@ -7,9 +7,9 @@ import (
 )
 
 type Repository interface {
-	CreateComment(context.Context, *models.Comment) (int, error)
-	GetAllComments(context.Context, int) ([]*models.CommentWithID, error)
-	DeleteAllComments(context.Context, int) error
+	CreateComment(context.Context, *models.Comment) (uint, error)
+	GetAllComments(context.Context, *uint) ([]*models.CommentWithID, error)
+	DeleteAllComments(context.Context, uint) error
 }
 
 type Service struct {
