@@ -21,7 +21,7 @@ func NewRouter(ginMode string, handlerComs *comments.Handler) *ginext.Engine {
 	api := e.Group("/comment-tree/api")
 	{
 		api.POST("/comments", handlerComs.CreateComment)
-		api.GET("comments/:parent", handlerComs.GetAllComments)
+		api.GET("comments", handlerComs.GetAllComments)
 		api.DELETE("/comments/:id", handlerComs.DeleteAllComments)
 	}
 

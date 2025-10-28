@@ -35,6 +35,7 @@ func main() {
 	if err := cfg.LoadEnvFiles(envFilePath); err != nil {
 		zlog.Logger.Fatal().Err(err).Msg("failed to load env file")
 	}
+	cfg.EnableEnv("")
 	if err := cfg.LoadConfigFiles(configFilePath); err != nil {
 		zlog.Logger.Fatal().Err(err).Msg("failed to load config file")
 	}
